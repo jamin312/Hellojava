@@ -12,15 +12,23 @@ public class BookDAO {
 	// 단건조회(findById), 반환값(boolean)
 	public boolean findById(int bno) {
 		Connection conn = DBUtil.getConnect();
-		Book book = new Book(bno, title, author, price);
-		String query = "select * from book " + "where id = ?";
+		String query = "SELECT * FROM book WHERE id = ?";
 		try {
 			PreparedStatement stmt = conn.prepareStatement(query);
 			stmt.setInt(1, bno);
-			System.out.println("도서 이름은 " + book.title);
-			int r = stmt.executeUpdate();
-			if (r > 0) {
+			ResultSet rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				Book book = new Book(rs.getInt("id"), rs.getString("title"),
+						rs.getString("author"), rs.getInt("price"));
+
+				System.out.print("제목: " + book.getTitle() + "\s");
+				System.out.print("저자: " + book.getAuthor() + "\s");
+				System.out.print("가격: " + book.getPrice() + "원" + "\n");
+
 				return true;
+			} else {
+				System.out.println("해당 도서를 찾을 수 없습니다.");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

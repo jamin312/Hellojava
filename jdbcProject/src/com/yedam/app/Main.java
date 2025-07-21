@@ -26,13 +26,14 @@ public class Main {
 			switch (menu) {
 			case 1 : // 도서 목록
 				ArrayList<Book> list = dao.findAll(); // 반환 : ArrayList<Book>
-				System.out.println("도서번호  도서명       저자    가격");
-				System.out.println("============================");
+				System.out.printf("%-8s  %-11s  %-13s  %s\n", "도서번호", "도서명", "저자", "가격");
+				System.out.println("================================================");
 				for(int i = 0; i < list.size(); i++) {
-					System.out.println(list.get(i).getId() 
-							+ " " + list.get(i).getTitle()
-							+ " " + list.get(i).getAuthor()
-							+ " " + list.get(i).getPrice());
+					System.out.printf("%-10d  %-10s  %-10s  %8d\n",
+							list.get(i).getId(),
+							list.get(i).getTitle(),
+							list.get(i).getAuthor(),
+							list.get(i).getPrice());
 				}
 				break;
 				

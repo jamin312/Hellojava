@@ -11,7 +11,7 @@ public class DBUtil {
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver"); //오라클 jdbc 유무 확인
 			conn = DriverManager.getConnection
-					("jdbc:oracle:thin:@localhost:1521:xe","scott", "tiger");
+					("jdbc:oracle:thin:@localhost:1521:xe", "scott", "tiger");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
