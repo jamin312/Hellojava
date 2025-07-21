@@ -79,6 +79,16 @@ public class Main {
 				}
 				break;
 				
+			case 5 : // findById
+				System.out.print("검색할 도서 번호를 입력하시오 >> ");
+				bno = scn.nextInt();scn.nextLine();
+				
+				if(dao.findById(bno)) {
+					System.out.println("정상 검색");
+				} else {
+					System.out.println("검색 중 오류");
+				}
+				break;
 			case 9 : // 종료
 				run = false;
 			}
