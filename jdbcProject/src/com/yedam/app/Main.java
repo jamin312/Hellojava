@@ -95,6 +95,7 @@ public class Main {
 			}
 		} // end while
 		
+		scn.close();
 		System.out.println("end of program");
 	}// end main
 
