@@ -27,9 +27,10 @@ public class UsersDAO {
 
 	// 로그인
 	public boolean logIn(String id, String pw) {
+		Connection conn = DBUtil.getConnect();
 		String sql = "SELECT * FROM users WHERE id = ? AND pw = ?";
-		try (Connection conn = DBUtil.getConnect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, id);
 			pstmt.setString(2, pw);
 			ResultSet rs = pstmt.executeQuery();
@@ -43,9 +44,10 @@ public class UsersDAO {
 
 	// ID 찾기 by 전화번호
 	public String findIdByPhone(String phone) {
+		Connection conn = DBUtil.getConnect();
 		String sql = "SELECT id FROM users WHERE phone = ?";
-		try (Connection conn = DBUtil.getConnect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, phone);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next()) {
@@ -60,9 +62,10 @@ public class UsersDAO {
 
 	// 비밀번호 변경
 	public int changePassword(String id, String newPw) {
+		Connection conn = DBUtil.getConnect();
 		String sql = "UPDATE users SET pw = ? WHERE id = ?";
-		try (Connection conn = DBUtil.getConnect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, newPw);
 			pstmt.setString(2, id);
 			return pstmt.executeUpdate();

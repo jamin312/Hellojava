@@ -3,124 +3,208 @@ package project;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class PostsDAO {
-	// 게시글 등록, 게시글 목록, 게시글 검색, 게시글 상세 조회, 게시글 제목 수정, 게시글 삭제, 게시판 종료
 	// 게시글 등록
 	public int createPost(Posts post) {
+		Connection conn = DBUtil.getConnect();
+		String sql = "INSERT INTO posts (userId, contentTitle, content) VALUES (?, ?, ?)";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, post.getUserId());
+			pstmt.setString(2, post.getContentTitle());
+			pstmt.setString(3, post.getContent());
+			return pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	// 게시글 조회
+	public ArrayList<Posts> findList() {
+		Connection conn = DBUtil.getConnect();
+		ArrayList<Posts> list = new ArrayList<>();
+		String sql = "SELECT * FROM posts ORDER BY contentId DESC";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				Posts p = new Posts();
+				p.setContentId(rs.getInt("contentId"));
+				p.setUserId(rs.getString("userId"));
+				p.setContentTitle(rs.getString("contentTitle"));
+				p.setContent(rs.getString("content"));
+				p.setCreateTime(rs.getDate("createTime"));
+				p.setViews(rs.getInt("views"));
+				p.setLikes(rs.getInt("likes"));
+				p.setHates(rs.getInt("hates"));
+				list.add(p);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	public Posts findById(int contentId) {
+		Connection conn = DBUtil.getConnect();
+		String sql = "SELECT * FROM posts WHERE contentId = ?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, contentId);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				if (rs.next()) {
+					Posts p = new Posts();
+					p.setContentId(rs.getInt("contentId"));
+					p.setUserId(rs.getString("userId"));
+					p.setContentTitle(rs.getString("contentTitle"));
+					p.setContent(rs.getString("content"));
+					p.setCreateTime(rs.getDate("createTime"));
+					p.setViews(rs.getInt("views"));
+					p.setLikes(rs.getInt("likes"));
+					p.setHates(rs.getInt("hates"));
+					return p;
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	// 게시글 수정
+	public int updatePost(int contentId, String title, String content, String userId) {
+		Connection conn = DBUtil.getConnect();
+		String sql = "UPDATE posts SET contentTitle = ?, content = ? WHERE contentId = ? AND userId = ?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, title);
+			pstmt.setString(2, content);
+			pstmt.setInt(3, contentId);
+			pstmt.setString(4, userId);
+			return pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
+	// 게시글 삭제
+	public int deletePost(int contentId, String userId) {
 	    Connection conn = DBUtil.getConnect();
-	    String sql = "INSERT INTO posts (userId, contentTitle, content) VALUES (?, ?, ?)";
-
 	    try {
-	        PreparedStatement pstmt = conn.prepareStatement(sql);
-	        pstmt.setString(1, post.getUserId());
-	        pstmt.setString(2, post.getContentTitle());
-	        pstmt.setString(3, post.getContent());
+	        PreparedStatement deleteVotes = conn.prepareStatement("DELETE FROM post_votes WHERE contentId = ?");
+	        deleteVotes.setInt(1, contentId);
+	        deleteVotes.executeUpdate();
 
-	        return pstmt.executeUpdate();
-	    } catch (SQLException e) {
+	        PreparedStatement deleteComments = conn.prepareStatement("DELETE FROM comments WHERE contentId = ?");
+	        deleteComments.setInt(1, contentId);
+	        deleteComments.executeUpdate();
+
+	        PreparedStatement deletePost = conn.prepareStatement("DELETE FROM posts WHERE contentId = ? AND userId = ?");
+	        deletePost.setInt(1, contentId);
+	        deletePost.setString(2, userId);
+	        int result = deletePost.executeUpdate();
+
+	        return result;
+
+	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
-
 	    return 0;
 	}
-	// 게시글 목록
-	public ArrayList<Posts> findList() {
-	    ArrayList<Posts> postList = new ArrayList<>();
-	    Connection conn = DBUtil.getConnect();
-	    String sql = "SELECT contentId, userId, contentTitle, createTime, views FROM posts ORDER BY contentId DESC";
 
-	    try {
-	        PreparedStatement pstmt = conn.prepareStatement(sql);
-	        ResultSet rs = pstmt.executeQuery();
+	// 조회수 증가
+	public int increaseViews(int contentId) {
+		Connection conn = DBUtil.getConnect();
+		String sql = "UPDATE posts SET views = views + 1 WHERE contentId = ?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, contentId);
+			return pstmt.executeUpdate();
 
-	        while (rs.next()) {
-	            Posts post = new Posts();
-	            post.setContentId(rs.getInt("contentId"));
-	            post.setUserId(rs.getString("userId"));
-	            post.setContentTitle(rs.getString("contentTitle"));
-	            post.setCreateTime(rs.getString("createTime"));
-	            post.setViews(rs.getInt("views"));
-	            postList.add(post);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-
-	    return postList;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
-	// 조회수
-	public void increaseViews(int contentId) {
-	    Connection conn = DBUtil.getConnect();
-	    String sql = "UPDATE posts SET views = views + 1 WHERE contentId = ?";
-	    try {
-	        PreparedStatement pstmt = conn.prepareStatement(sql);
-	        pstmt.setInt(1, contentId);
-	        pstmt.executeUpdate();
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-	}
-	//검색
+	
+	// 게시글 검색
 	public ArrayList<Posts> searchByTitle(String keyword) {
-	    Connection conn = DBUtil.getConnect();
-	    ArrayList<Posts> resultList = new ArrayList<>();
-	    String sql = "SELECT contentId, userId, contentTitle, content, createTime, views FROM posts WHERE contentTitle LIKE ? ORDER BY contentId DESC";
+		Connection conn = DBUtil.getConnect();
+		ArrayList<Posts> list = new ArrayList<>();
+		String sql = "SELECT * FROM posts WHERE contentTitle LIKE ? ORDER BY contentId DESC";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%" + keyword + "%");
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Posts p = new Posts();
+				p.setContentId(rs.getInt("contentId"));
+				p.setUserId(rs.getString("userId"));
+				p.setContentTitle(rs.getString("contentTitle"));
+				p.setContent(rs.getString("content"));
+				p.setCreateTime(rs.getDate("createTime"));
+				p.setViews(rs.getInt("views"));
+				p.setLikes(rs.getInt("likes"));
+				p.setHates(rs.getInt("hates"));
+				list.add(p);
+			}
 
-	    try {
-	        PreparedStatement pstmt = conn.prepareStatement(sql);
-	        pstmt.setString(1, "%" + keyword + "%");  // 키워드 포함하는 조건
-
-	        ResultSet rs = pstmt.executeQuery();
-
-	        while (rs.next()) {
-	            Posts post = new Posts();
-	            post.setContentId(rs.getInt("contentId"));
-	            post.setUserId(rs.getString("userId"));
-	            post.setContentTitle(rs.getString("contentTitle"));
-	            post.setContent(rs.getString("content"));
-	            post.setCreateTime(rs.getString("createTime"));
-	            post.setViews(rs.getInt("views"));
-
-	            resultList.add(post);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-
-	    return resultList;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
 	}
 	
-	
-	
-	//상세 조회
-	public Posts findById(int contentId) {
-	    Connection conn = DBUtil.getConnect();
-	    String sql = "SELECT * FROM posts WHERE contentId = ?";
-	    Posts post = null;
+	// 추천 / 비추천 선택
+	public int votePost(String userId, int contentId, String type) {
+		Connection conn = DBUtil.getConnect();
+		String checkSql = "SELECT 1 FROM post_votes WHERE userId = ? AND contentId = ?";
+		String insertSql = "INSERT INTO post_votes (userId, contentId) VALUES (?, ?)";
+		String updateSql;
 
-	    try {
-	        PreparedStatement pstmt = conn.prepareStatement(sql);
-	        pstmt.setInt(1, contentId);
-	        ResultSet rs = pstmt.executeQuery();
+		if ("LIKE".equalsIgnoreCase(type)) {
+			updateSql = "UPDATE posts SET likes = likes + 1 WHERE contentId = ?";
+		} else if ("DISLIKE".equalsIgnoreCase(type)) {
+			updateSql = "UPDATE posts SET hates = hates + 1 WHERE contentId = ?";
+		} else {
+			return 0;
+		}
 
-	        if (rs.next()) {
-	            post = new Posts();
-	            post.setContentId(rs.getInt("contentId"));
-	            post.setUserId(rs.getString("userId"));
-	            post.setContentTitle(rs.getString("contentTitle"));
-	            post.setContent(rs.getString("content"));
-	            post.setCreateTime(rs.getString("createTime"));
-	            post.setViews(rs.getInt("views"));
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
+			try {
+				PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+				checkStmt.setString(1, userId);
+				checkStmt.setInt(2, contentId);
+				ResultSet rs = checkStmt.executeQuery();
+				if (rs.next()) {
+					return -1;
+				}
 
-	    return post;
+			try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+				updateStmt.setInt(1, contentId);
+				updateStmt.executeUpdate();
+			}
+
+			try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+				insertStmt.setString(1, userId);
+				insertStmt.setInt(2, contentId);
+				insertStmt.executeUpdate();
+			}
+
+			return 1;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return 0;
 	}
-	
-	
-}// end class
+}
