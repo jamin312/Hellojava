@@ -18,6 +18,7 @@ public class Main {
 		String loginId = null;
 		String id = null;
 		int contNum = 0;
+		ArrayList<Comments> comments = cmtdao.findByPostId(contNum);
 
 		System.out.printf("%10s %10s %10s\n", "게", "시", "판");
 		System.out.println("----------------------------------------------------------------------");
@@ -202,11 +203,11 @@ public class Main {
 
 				case 2:
 					list = pstdao.findList();
-					System.out.printf("%-3s %-15s %-20s %-15s %-3s\n", "번호", "작성자", "제목", "작성일시", "조회수");
+					System.out.printf("%-3s %-15s %-20s %-15s %-5s %-3s\n", "번호", "작성자", "제목", "작성일시", "댓글 수", "조회수");
 					System.out.println("----------------------------------------------------------------------");
 					for (Posts post : list) {
-						System.out.printf("%-3d %-15s %-20s %-15s %-3d\n", post.getContentId(), post.getUserId(),
-								post.getContentTitle(), post.getCreateTime(), post.getViews());
+						System.out.printf("%-3d %-15s %-20s %-20s %-5d %-3d\n", post.getContentId(), post.getUserId(),
+								post.getContentTitle(), post.getCreateTime(), cmtdao.countByPostId(post.getContentId()), post.getViews());
 					}
 					System.out.println("----------------------------------------------------------------------");
 					break;
@@ -251,7 +252,7 @@ public class Main {
 						System.out.println("내용: " + post.getContent());
 						System.out.print("추천" + post.getLikes() + "\t");
 						System.out.print("비추천" + post.getHates() + "\n");
-						ArrayList<Comments> comments = cmtdao.findByPostId(contNum);
+						comments = cmtdao.findByPostId(contNum);
 						System.out.println("--------------------------- 댓글 목록 ----------------------------------");
 						if (comments.isEmpty()) {
 							System.out.println("댓글이 없습니다.");
@@ -360,17 +361,7 @@ public class Main {
 					break;
 
 				case 5: // 댓글 목록
-					ArrayList<Comments> comments = cmtdao.findByPostId(contNum);
 					System.out.println("------------------------------ 댓글 목록 -------------------------------");
-
-					if (comments.isEmpty()) {
-						System.out.println("댓글이 없습니다.");
-					} else {
-						for (Comments c : comments) {
-							System.out.printf("%-10s %-15s %-30s %s\n", "댓글 번호", "작성자 ID", "댓글 내용", "작성 시간");
-							System.out.printf("%-10s %-15s %-30s (%s)\n", c.getCommentId(), c.getUserId(), c.getCommentText(), c.getCreateTime());
-						}
-					}
 					run4 = false;
 					run5 = true;
 					break;
@@ -393,8 +384,16 @@ public class Main {
 			} // end while
 
 			while (run5) {
-				System.out.println("----------------------------------------------------------------------");
 				System.out.printf("%15s %15s\n", "댓", "글");
+				System.out.println("----------------------------------------------------------------------");
+				if (comments.isEmpty()) {
+					System.out.println("댓글이 없습니다.");
+				} else {
+					for (Comments c : comments) {
+						System.out.printf("%-10s %-15s %-30s %s\n", "댓글 번호", "작성자 ID", "댓글 내용", "작성 시간");
+						System.out.printf("%-10s %-15s %-30s (%s)\n", c.getCommentId(), c.getUserId(), c.getCommentText(), c.getCreateTime());
+					}
+				}
 				System.out.println("1.댓글 등록");
 				System.out.println("2.댓글 수정");
 				System.out.println("3.댓글 삭제");
