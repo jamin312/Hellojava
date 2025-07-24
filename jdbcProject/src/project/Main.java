@@ -140,7 +140,7 @@ public class Main {
 				System.out.print("변경할 비밀번호를 입력하세요: ");
 				String newPw = sc.nextLine();
 
-				result = usrdao.changePassword(id, newPw);
+				result = usrdao.changePassword(id, newPw, phone);
 				if (result == 1) {
 					System.out.println("비밀번호가 성공적으로 변경되었습니다.");
 				} else {
@@ -287,8 +287,9 @@ public class Main {
 				System.out.println("2.게시글 삭제");
 				System.out.println("3.게시글 추천");
 				System.out.println("4.게시글 비추천");
-				System.out.println("5.댓글 작성하기");
-				System.out.println("6.게시판으로 돌아가기");
+				System.out.println("5.추천/비추천 취소");
+				System.out.println("6.댓글 작성하기");
+				System.out.println("7.게시판으로 돌아가기");
 				System.out.println("9.프로그램 종료");
 
 				System.out.print("선택: ");
@@ -343,7 +344,7 @@ public class Main {
 				case 3:
 					int result = pstdao.votePost(loginId, contNum, "LIKE");
 					if (result == 1)
-						System.out.println("추천 완료!");
+						System.out.println("추천 완료");
 					else if (result == -1)
 						System.out.println("이미 추천/비추천 하였습니다.");
 					else
@@ -353,20 +354,31 @@ public class Main {
 				case 4:
 					result = pstdao.votePost(loginId, contNum, "DISLIKE");
 					if (result == 1)
-						System.out.println("비추천 완료!");
+						System.out.println("비추천 완료");
 					else if (result == -1)
 						System.out.println("이미 추천/비추천 하였습니다.");
 					else
 						System.out.println("비추천 실패");
 					break;
-
-				case 5: // 댓글 목록
+					
+				case 5:
+					result = pstdao.cancelVote(loginId, contNum);
+					if (result == 1) {
+					    System.out.println("추천/비추천이 취소되었습니다.");
+					} else if (result == -1) {
+					    System.out.println("추천/비추천한 기록이 없습니다.");
+					} else {
+					    System.out.println("추천/비추천 취소 중 오류가 발생했습니다.");
+					}
+					break;
+					
+				case 6: // 댓글 목록
 					System.out.println("------------------------------ 댓글 목록 -------------------------------");
 					run4 = false;
 					run5 = true;
 					break;
 
-				case 6: // 게시판 돌아가기
+				case 7: // 게시판 돌아가기
 					run4 = false;
 					run3 = true;
 					break;

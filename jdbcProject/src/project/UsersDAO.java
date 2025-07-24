@@ -61,13 +61,14 @@ public class UsersDAO {
 	}
 
 	// 비밀번호 변경
-	public int changePassword(String id, String newPw) {
+	public int changePassword(String id, String newPw, String phone) {
 		Connection conn = DBUtil.getConnect();
-		String sql = "UPDATE users SET pw = ? WHERE id = ?";
+		String sql = "UPDATE users SET pw = ? WHERE id = ? AND phone = ?";
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, newPw);
 			pstmt.setString(2, id);
+			pstmt.setString(3, phone);
 			return pstmt.executeUpdate();
 
 		} catch (Exception e) {
@@ -93,7 +94,7 @@ public class UsersDAO {
 	    return false;
 	}
 	
-	// 전화번호 체크
+	// 전화번호 중복 확인
 	public boolean phoneCheck(String phone) {
 	    Connection conn = DBUtil.getConnect();
 	    String sql = "SELECT phone FROM users WHERE phone = ?";
